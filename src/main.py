@@ -91,6 +91,7 @@ if __name__ == '__main__':
 
     inbox = acct.inbox / 'prd.support'
 
+    send_message_to_vkt(r'Бот itsm2vk\_bot запущен', os.environ['VKT_ADMIN_ID'])
     while True:
         try:
             logging.info('Checking new emails...')
@@ -99,12 +100,12 @@ if __name__ == '__main__':
             time.sleep(60)  # Пауза в 60 секунд между проверками
         except ErrorFolderNotFound as e:
             print(f'Ошибка: {e}')
-            send_message_to_vkt(f'Ошибка: {e}', os.environ['VKT_ADMIN_ID'])
+            send_message_to_vkt(f'Ошибка:\n```\n{e}\n```'.replace('_', r'\_'), os.environ['VKT_ADMIN_ID'])
             break
         except KeyboardInterrupt:
             print('Прервано пользователем')
             break
         except Exception as e:
             print(f'Ошибка: {e}')
-            send_message_to_vkt(f'Ошибка: {e}', os.environ['VKT_ADMIN_ID'])
+            send_message_to_vkt(f'Ошибка:\n```\n{e}\n```'.replace('_', r'\_'), os.environ['VKT_ADMIN_ID'])
 
