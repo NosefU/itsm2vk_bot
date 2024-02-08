@@ -21,11 +21,11 @@ class Incident:
     def from_notification(cls, notification_text: str):
         notf_pattern = re.compile(
             r"Исполнение \[(?P<inc_id>INC\d+)\], \[(?P<priority>\S+)\].+"
-            r"Дата регистрации: \[(?P<date>[\d\sPAM:/]+)\].+"
-            r"Статус SLA: \[(?P<sla>.*)\].+"
-            r"Пользователь: \[(?P<family_name>\S+) (?P<name>\S+) (?P<parent_name>\S+)\].+"
-            r"Организация: \[(?P<org_unit>.+)\].+"
-            r"Описание: \[(?P<subject>.*)\].+"
+            r"Дата регистрации:\s+\[(?P<date>[\d\sPAM:/]+)\].+"
+            r"Статус SLA:\s+\[(?P<sla>.*)\].+"
+            r"Пользователь:\s+\[(?P<family_name>\S+) (?P<name>\S+) (?P<parent_name>\S*)\].+"
+            r"Организация:\s+\[(?P<org_unit>.+)\].+"
+            r"Описание:\s+\[(?P<subject>.*)\].+"
             r"Подробное описание:.+\[(?P<description>.*)\].+"
             r"Ссылка: Заявка *<(?P<link>\S+)>",
             re.DOTALL
