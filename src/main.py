@@ -10,11 +10,22 @@ import requests
 
 from incident import Incident
 import templates
+import vkt_logger
 
 
 load_dotenv()
-logging.basicConfig(level=logging.INFO)
-print(os.environ.get('EXC_USER', 'No EXC_USER environ'))
+
+
+logging.basicConfig(level=logging.INFO,
+                    format="%(asctime)s\t%(name)s\t%(levelname)s\t%(message)s")
+
+vkt_logger.setup(
+    logging.getLogger(),
+    api_url=os.environ['VKT_BASE_URL'],
+    token=os.environ['VKT_BOT_TOKEN'],
+    chats=[os.environ['VKT_ADMIN_ID'], ]
+)
+logger = logging.getLogger('bot')
 
 
 def prep_message(inc: Incident) -> str:
@@ -56,18 +67,26 @@ def send_message_to_vkt(msg: str, chat_id: str):
 def process_new_emails():
     unread_emails = list(inbox.filter(is_read=False))
     if not unread_emails:
-        logging.info('No new emails')
+        logger.info('No new emails')
         return
 
     for item in unread_emails[::-1]:
-        logging.info(item.sender.email_address + ": " + item.subject)
+        logger.info("Processing message from " + item.sender.email_address + ": " + item.subject)
         if item.sender.email_address != 'prd.support@lukoil.com' \
                 or '] назначено на вашу группу [' not in item.subject:
+            logger.info('\t\tis not notification')
             item.is_read = True  # Помечаем письмо как прочитанное
             continue
 
         inc = Incident.from_notification(item.text_body)
-        logging.info(inc)
+
+        if not inc:
+            logger.error('Incorrect message format')
+            item.is_read = True  # Помечаем письмо как прочитанное
+            item.save()
+            continue
+
+        logger.info(inc)
         msg = prep_message(inc)
         send_message_to_vkt(msg, os.environ['VKT_CHAT_ID'])
         item.is_read = True  # Помечаем письмо как прочитанное
@@ -94,18 +113,19 @@ if __name__ == '__main__':
     send_message_to_vkt(r'Бот itsm2vk\_bot запущен', os.environ['VKT_ADMIN_ID'])
     while True:
         try:
-            logging.info('Checking new emails...')
+            logger.info('Checking new emails...')
             process_new_emails()
-            logging.info('Waiting 60 sec for next email check...')
+            logger.info('Waiting 60 sec for next email check...')
             time.sleep(60)  # Пауза в 60 секунд между проверками
         except ErrorFolderNotFound as e:
             print(f'Ошибка: {e}')
-            send_message_to_vkt(f'Ошибка:\n```\n{e}\n```'.replace('_', r'\_'), os.environ['VKT_ADMIN_ID'])
+            logger.exception(e)
             break
         except KeyboardInterrupt:
             print('Прервано пользователем')
+            logger.info('Прервано пользователем')
             break
         except Exception as e:
             print(f'Ошибка: {e}')
-            send_message_to_vkt(f'Ошибка:\n```\n{e}\n```'.replace('_', r'\_'), os.environ['VKT_ADMIN_ID'])
+            logger.exception(e)
 

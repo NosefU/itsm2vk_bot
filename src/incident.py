@@ -1,5 +1,9 @@
+import logging
 import re
 from dataclasses import dataclass
+
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -32,7 +36,8 @@ class Incident:
         )
         match = re.search(notf_pattern, notification_text)
         if not match:
-            print(f'I dont recognize that mail: {notification_text}')
+            # print(f'I dont recognize that mail: {notification_text}')
+            logger.error(f'I dont recognize that mail: {notification_text}')
             return None
 
         return cls(
@@ -61,7 +66,8 @@ class Incident:
         )
         match = re.search(descr_pattern, descr_text)
         if not match:
-            print(f'I dont recognize that message: {descr_text}')
+            # print(f'I dont recognize that message: {descr_text}')
+            logger.error(f'I dont recognize that message: {descr_text}')
             return None
 
         return cls(
