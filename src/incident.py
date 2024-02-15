@@ -23,15 +23,10 @@ class Incident:
 
     @classmethod
     def from_notification(cls, notification_text: str):
+        # TODO Разбить регэксп на мелкие, отдельно для каждого поля.
+        #  Возможно, реализовать что-то типа мапы поле: регэксп
         notf_pattern = re.compile(
-            r"Исполнение \[(?P<inc_id>INC\d+)\], \[(?P<priority>\S+)\].+"
-            r"Дата регистрации:\s+\[(?P<date>[\d\sPAM:/]+)\].+"
-            r"Статус SLA:\s+\[(?P<sla>.*)\].+"
-            r"Пользователь:\s+\[(?P<family_name>\S+) (?P<name>\S+) (?P<parent_name>\S*)\].+"
-            r"Организация:\s+\[(?P<org_unit>.+)\].+"
-            r"Описание:\s+\[(?P<subject>.*)\].+"
-            r"Подробное описание:.+\[(?P<description>.*)\].+"
-            r"Ссылка: Заявка *<(?P<link>\S+)>",
+            r"Исполнение \[(?P<inc_id>INC\d+)\], \[(?P<priority>\S+)\].+Дата регистрации:\s+\[(?P<date>[\d\sPAM:\.\/]+)\].+Статус SLA:\s+\[(?P<sla>.*)\].+Пользователь:\s+\[(?P<family_name>\S+) (?P<name>\S+) (?P<parent_name>\S*)\].+Организация:\s+\[(?P<org_unit>.+)\].+Описание:\s+\[(?P<subject>.*)\].+Подробное описание:.+\[(?P<description>.*)\].+Ссылка: Заявка *<(?P<link>\S+)>",
             re.DOTALL
         )
         match = re.search(notf_pattern, notification_text)
