@@ -20,3 +20,10 @@ md_description = string.Template(
     "⚙ `$device`\n\n"
     "✏️ $description"
 )
+
+md_mon_notification = string.Template(
+    "$priority_emoji *$server*\n\n"
+    "*`📖 $description`*\n\n"
+    "⏱️ $registration_date\n"
+    "🔔 $notification_date"
+)

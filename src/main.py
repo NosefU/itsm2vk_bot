@@ -3,12 +3,14 @@ from dataclasses import asdict
 import logging
 import time
 
+import exchangelib.folders.known_folders
 from dotenv import load_dotenv
-from exchangelib import Credentials, Account, DELEGATE, Configuration, FaultTolerance
+from exchangelib import Credentials, Account, DELEGATE, Configuration
 from exchangelib.errors import ErrorFolderNotFound
 import requests
 
 from incident import Incident
+from monitoring import Monitoring
 import templates
 import vkt_logger
 
@@ -28,7 +30,7 @@ vkt_logger.setup(
 logger = logging.getLogger('bot')
 
 
-def prep_message(inc: Incident) -> str:
+def prep_inc_message(inc: Incident) -> str:
     fields = asdict(inc)
 
     # экранируем "_", вычищаем пустые строки и превращаем всё в цитату
@@ -52,6 +54,17 @@ def prep_message(inc: Incident) -> str:
     return templates.md_notification.substitute(fields)
 
 
+def prep_mon_message(mon: Monitoring) -> str:
+    fields = asdict(mon)
+
+    # экранируем "_", вычищаем пустые строки
+    fields['description'] = fields['description'].replace('_', r'\_')
+    fields['description'] = fields['description'].replace('\r', '')
+    fields['description'] = '\n'.join([s for s in fields['description'].split('\n') if s])
+
+    return templates.md_mon_notification.substitute(fields)
+
+
 def send_message_to_vkt(msg: str, chat_id: str):
     requests.get(
         url=os.environ['VKT_BASE_URL'] + "messages/sendText",
@@ -64,31 +77,60 @@ def send_message_to_vkt(msg: str, chat_id: str):
     )
 
 
-def process_new_emails():
-    unread_emails = list(inbox.filter(is_read=False))
+def process_new_inc_emails(mail_dir: exchangelib.folders.known_folders.Messages):
+    unread_emails = list(mail_dir.filter(is_read=False))
     if not unread_emails:
-        logger.info('No new emails')
+        logger.info('No new incident emails')
         return
 
     for item in unread_emails[::-1]:
-        logger.info("Processing message from " + item.sender.email_address + ": " + item.subject)
+        logger.info("Processing incident message from " + item.sender.email_address + ": " + item.subject)
         if item.sender.email_address != 'prd.support@lukoil.com' \
                 or '] назначено на вашу группу [' not in item.subject:
-            logger.info('\t\tis not notification')
+            logger.info('\t\tis not incident notification')
             item.is_read = True  # Помечаем письмо как прочитанное
             continue
 
         inc = Incident.from_notification(item.text_body)
 
         if not inc:
-            logger.error('Incorrect message format')
+            logger.error('Incorrect incident message format')
             item.is_read = True  # Помечаем письмо как прочитанное
             item.save()
             continue
 
         logger.info(inc)
-        msg = prep_message(inc)
+        msg = prep_inc_message(inc)
         send_message_to_vkt(msg, os.environ['VKT_CHAT_ID'])
+        item.is_read = True  # Помечаем письмо как прочитанное
+        item.save()
+
+
+def process_new_monitoring_emails(mail_dir: exchangelib.folders.known_folders.Messages):
+    unread_emails = list(mail_dir.filter(is_read=False))
+    if not unread_emails:
+        logger.info('No new monitoring emails')
+        return
+
+    for item in unread_emails[::-1]:
+        logger.info("Processing monitoring message from " + item.sender.email_address + ": " + item.subject)
+        if item.sender.email_address != 'no-reply.monitoring@lukoil.com' \
+                or '.srv.lukoil.com' not in item.subject:
+            logger.info('\t\tis not monitoring notification')
+            item.is_read = True  # Помечаем письмо как прочитанное
+            continue
+
+        mon = Monitoring.from_notification(item.text_body)
+
+        if not mon:
+            logger.error('Incorrect monitoring message format')
+            item.is_read = True  # Помечаем письмо как прочитанное
+            item.save()
+            continue
+
+        logger.info(mon)
+        msg = prep_mon_message(mon)
+        send_message_to_vkt(msg, os.environ['VKT_ADMIN_ID'])
         item.is_read = True  # Помечаем письмо как прочитанное
         item.save()
 
@@ -108,13 +150,15 @@ if __name__ == '__main__':
         access_type=DELEGATE
     )
 
-    inbox = acct.inbox / 'prd.support'
+    inc_dir = acct.inbox / 'prd.support'
+    monitoring_dir = acct.inbox / 'Мониторинг'
 
     send_message_to_vkt(r'Бот itsm2vk\_bot запущен', os.environ['VKT_ADMIN_ID'])
     while True:
         try:
             logger.info('Checking new emails...')
-            process_new_emails()
+            process_new_inc_emails(inc_dir)
+            process_new_monitoring_emails(monitoring_dir)
             logger.info('Waiting 60 sec for next email check...')
             time.sleep(60)  # Пауза в 60 секунд между проверками
         except ErrorFolderNotFound as e:
