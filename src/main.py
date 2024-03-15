@@ -157,7 +157,7 @@ if __name__ == '__main__':
     while True:
         try:
             logger.info('Checking new emails...')
-            # process_new_inc_emails(inc_dir)
+            process_new_inc_emails(inc_dir)
             process_new_monitoring_emails(monitoring_dir)
             logger.info('Waiting 60 sec for next email check...')
             time.sleep(60)  # Пауза в 60 секунд между проверками
