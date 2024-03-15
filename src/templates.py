@@ -22,8 +22,7 @@ md_description = string.Template(
 )
 
 md_mon_notification = string.Template(
-    "$priority_emoji *$server*\n\n"
-    "*`📖 $description`*\n\n"
-    "⏱️ $registration_date\n"
-    "🔔 $notification_date"
+    "$priority_emoji *$server*\n"
+    "_$registration_date _\n\n"
+    "*`📖 $description`*\n"
 )
