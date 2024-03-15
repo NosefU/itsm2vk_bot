@@ -130,7 +130,7 @@ def process_new_monitoring_emails(mail_dir: exchangelib.folders.known_folders.Me
 
         logger.info(mon)
         msg = prep_mon_message(mon)
-        send_message_to_vkt(msg, os.environ['VKT_ADMIN_ID'])
+        send_message_to_vkt(msg, os.environ['VKT_MONITORING_CHAT_ID'])
         item.is_read = True  # Помечаем письмо как прочитанное
         item.save()
 
@@ -157,7 +157,7 @@ if __name__ == '__main__':
     while True:
         try:
             logger.info('Checking new emails...')
-            process_new_inc_emails(inc_dir)
+            # process_new_inc_emails(inc_dir)
             process_new_monitoring_emails(monitoring_dir)
             logger.info('Waiting 60 sec for next email check...')
             time.sleep(60)  # Пауза в 60 секунд между проверками
