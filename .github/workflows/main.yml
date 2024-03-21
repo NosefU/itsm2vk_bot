@@ -3,7 +3,7 @@ name: Update Bot on server
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   update-and-rerun:
