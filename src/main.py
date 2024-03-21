@@ -44,7 +44,7 @@ def prep_inc_message(inc: Incident) -> str:
     fields['description'] = '\n'.join([s for s in fields['description'].split('\n') if s])
 
     # если описание - пересылка другого инцидента, то парсим его,
-    # формируем часть сообщения, превращаем в цитату и склеиваем с основным сообщением
+    # формируем часть сообщения, превращаем в цитату и склеиваем с основным сообщением.
     if fields['description'].startswith('Для группы 2-ая линия ВК мессенджер (VK Teams)'):
         descr_inc = Incident.from_description(fields['description'])
         descr_fields = asdict(descr_inc)
