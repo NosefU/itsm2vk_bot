@@ -1,0 +1,20 @@
+name: Update Bot on server
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  update-and-rerun:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Setup SSH
+      uses: webfactory/ssh-agent@v0.5.4
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+    - name: Connect to server update bot
+      run: |
+        ssh -o StrictHostKeyChecking=no ${{ vars.SSH_USER }}@${{ vars.SERVER_IP }} 'cd ~/itsm2vk_bot/itsm2vk_bot && git pull && make build && make hard_restart'
