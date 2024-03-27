@@ -72,11 +72,16 @@ def prep_mon_message(mon: Monitoring) -> dict:
 
 
 def send_message_to_vkt(msg: dict, chat_id: str):
+    """
+    Отправляет сообщение в vk teams
+    :param msg: {'text': str, 'inlineKB': str, ...}
+    :param chat_id: адресат
+    """
     params = {
         "token": os.environ['VKT_BOT_TOKEN'],
         "chatId": chat_id,
         "parseMode": "MarkdownV2",
-        "text": msg['text'],
+        "text": msg['text']
     }
     if 'inlineKB' in msg:
         params.update(inlineKeyboardMarkup=msg['inlineKB'])
@@ -163,7 +168,7 @@ if __name__ == '__main__':
     inc_dir = acct.inbox / 'prd.support'
     monitoring_dir = acct.inbox / 'Мониторинг'
 
-    send_message_to_vkt(r'Бот itsm2vk\_bot запущен', os.environ['VKT_ADMIN_ID'])
+    send_message_to_vkt({'text': r'Бот itsm2vk\_bot запущен'}, os.environ['VKT_ADMIN_ID'])
     while True:
         try:
             logger.info('Checking new emails...')
