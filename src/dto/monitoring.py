@@ -1,6 +1,9 @@
 import logging
 import re
-from dataclasses import dataclass
+import string
+from dataclasses import dataclass, asdict
+
+from .notification import Notification
 
 
 logger = logging.getLogger(__name__)
@@ -10,9 +13,15 @@ PRIORITY_EMOJI = {
     'Warning': '🟨',
 }
 
+vkt_template = string.Template(
+    "$priority_emoji *$server*\n"
+    "_$registration_date _\n\n"
+    "*`📖 $description`*\n"
+)
+
 
 @dataclass
-class Monitoring:
+class Monitoring(Notification):
     server: str = ""
     priority: str = ""
     priority_emoji: str = ""
@@ -43,3 +52,16 @@ class Monitoring:
             notification_date=match.group('notf_time'),
             description=match.group('description').removesuffix('\r'),
         )
+
+    def prep_vkt_message(self):
+        fields = asdict(self)
+
+        # экранируем "_", вычищаем пустые строки
+        fields['description'] = fields['description'].replace('_', r'\_')
+        fields['description'] = fields['description'].replace('\r', '')
+        fields['description'] = '\n'.join([s for s in fields['description'].split('\n') if s])
+
+        return {
+            'text': vkt_template.substitute(fields),
+            'inlineKB': None,
+        }
