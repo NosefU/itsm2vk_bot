@@ -30,7 +30,7 @@ vkt_logger.setup(
 logger = logging.getLogger('bot')
 
 
-def prep_inc_message(inc: Incident) -> str:
+def prep_inc_message(inc: Incident) -> dict:
     fields = asdict(inc)
 
     # экранируем "_", вычищаем пустые строки и превращаем всё в цитату
@@ -51,10 +51,13 @@ def prep_inc_message(inc: Incident) -> str:
         fields['description'] = templates.md_description.substitute(descr_fields)
     fields['description'] = '\n'.join(['>' + s for s in fields['description'].split('\n')])
 
-    return templates.md_notification.substitute(fields)
+    return {
+        'text': templates.md_notification.substitute(fields),
+        'inlineKB': '[[{"text": "🔗 Инцидент в ITSM", "url": "' + fields['link'] + '", "style": "primary"}]]'
+    }
 
 
-def prep_mon_message(mon: Monitoring) -> str:
+def prep_mon_message(mon: Monitoring) -> dict:
     fields = asdict(mon)
 
     # экранируем "_", вычищаем пустые строки
@@ -62,18 +65,25 @@ def prep_mon_message(mon: Monitoring) -> str:
     fields['description'] = fields['description'].replace('\r', '')
     fields['description'] = '\n'.join([s for s in fields['description'].split('\n') if s])
 
-    return templates.md_mon_notification.substitute(fields)
+    return {
+        'text': templates.md_mon_notification.substitute(fields),
+        'inlineKB': None,
+    }
 
 
-def send_message_to_vkt(msg: str, chat_id: str):
+def send_message_to_vkt(msg: dict, chat_id: str):
+    params = {
+        "token": os.environ['VKT_BOT_TOKEN'],
+        "chatId": chat_id,
+        "parseMode": "MarkdownV2",
+        "text": msg['text'],
+    }
+    if 'inlineKB' in msg:
+        params.update(inlineKeyboardMarkup=msg['inlineKB'])
+
     requests.get(
         url=os.environ['VKT_BASE_URL'] + "messages/sendText",
-        params={
-            "token": os.environ['VKT_BOT_TOKEN'],
-            "chatId": chat_id,
-            "parseMode": "MarkdownV2",
-            "text": msg
-        }
+        params=params
     )
 
 
