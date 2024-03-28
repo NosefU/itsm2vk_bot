@@ -55,7 +55,7 @@ if __name__ == '__main__':
                 vkt_message = message.prep_vkt_message()
                 bot.send_message(
                     text=vkt_message['text'],
-                    chat_id=os.environ['VKT_MONITORING_CHAT_ID'],
+                    chat_id=os.environ['VKT_CHAT_ID'],
                     inline_kb=vkt_message.get('inlineKB', '')
                 )
 
