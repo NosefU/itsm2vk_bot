@@ -1,4 +1,9 @@
+import logging
+
 import requests
+
+
+logger = logging.getLogger(__name__)
 
 
 class Bot:
@@ -16,6 +21,8 @@ class Bot:
         :param chat_id: адресат
         :param inline_kb: клавиатура (см. api vk teams)
         """
+
+        logger.info(f"Sending message to: {chat_id}")
         params = {
             "token": self.token,
             "chatId": chat_id,
@@ -25,7 +32,8 @@ class Bot:
         if inline_kb:
             params.update(inlineKeyboardMarkup=inline_kb)
 
-        requests.get(
+        resp = requests.get(
             url=self.base_url + "messages/sendText",
             params=params
         )
+        logger.info(f"Server answer: {resp.text}")
