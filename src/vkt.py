@@ -14,6 +14,17 @@ class Bot:
         self.token = token
         if base_url:
             self.base_url = base_url
+        self.nickname = self.get_self_nick()
+
+    def get_self_nick(self):
+        params = {
+            "token": self.token,
+        }
+        resp = requests.get(
+            url=self.base_url + "/self/get",
+            params=params
+        )
+        return resp.json()['nick']
 
     def send_message(self, text: str, chat_id: str, inline_kb: str = ''):
         """
