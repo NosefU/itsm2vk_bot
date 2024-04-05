@@ -8,7 +8,7 @@ from .notification import Notification
 logger = logging.getLogger(__name__)
 
 inc_notification_template = string.Template(
-    "*#$idx*\n\n"
+    "*#$idx   #$status*\n\n"
     "⭐ $priority\n"
     "👤 $family_name $name $parent_name\n"
     "🏭 $org_unit\n"
@@ -43,6 +43,7 @@ class Incident(Notification):
     description: str = ""
     link: str = ""
     device: str = ""
+    status: str = "OPEN"
 
     @classmethod
     def from_notification(cls, notification_text: str):
@@ -105,6 +106,40 @@ class Incident(Notification):
             device=match.group('device'),
         )
 
+    @classmethod
+    def from_vkt_message(cls, notification_text: str, link: str = ''):
+        # TODO Разбить регэксп на мелкие, отдельно для каждого поля.
+        #  Возможно, реализовать что-то типа мапы поле: регэксп
+        vkt_msg_pattern = re.compile(
+            r"#(?P<inc_id>INC\d+)   #(?P<status>\S+)\n\n"
+            r"⭐ (?P<priority>\S+)\n"
+            r"👤 (?:(?P<family_name>\S+) (?P<name>\S+) (?P<parent_name>\S*)|(?P<job_title>.+))\n"
+            r"🏭 (?P<org_unit>.+)\n"
+            r"📆 (?P<date>[\d\sPAM:\.\/]+)\n\n"
+            r"🪧 Описание\n(?P<subject>.*)\n\n"
+            r"📖 Подробно\n(?P<description>.*)",
+            re.DOTALL
+        )
+        match = re.search(vkt_msg_pattern, notification_text)
+        if not match:
+            # print(f'I dont recognize that mail: {notification_text}')
+            logger.error(f'I dont recognize that vkt message: {notification_text}')
+            return None
+
+        return cls(
+            idx=match.group('inc_id'),
+            priority=match.group('priority'),
+            creation_date=match.group('date'),
+            family_name=match.group('family_name') or match.group('job_title'),
+            name=match.group('name') or "",
+            parent_name=match.group('parent_name') or "",
+            org_unit=match.group('org_unit'),
+            subject=match.group('subject'),
+            description=match.group('description'),
+            status=match.group('status'),
+            link=link
+        )
+
     def prep_vkt_message(self) -> dict:
         fields = asdict(self)
 
@@ -126,7 +161,15 @@ class Incident(Notification):
             fields['description'] = inc_description_template.substitute(descr_fields)
         fields['description'] = '\n'.join(['>' + s for s in fields['description'].split('\n')])
 
+        inline_kb = '[[{"text": "🔗 Инцидент в ITSM", "url": "' + fields['link'] + '", "style": "primary"}]'
+        if self.status == 'OPEN':
+            inline_kb += ',[{"text": "Отметить закрытой", "callbackData": "close", "style": "attention"}]]'
+        elif self.status == 'CLOSED':
+            inline_kb += ',[{"text": "Отметить открытой", "callbackData": "open", "style": "base"}]]'
+        else:
+            inline_kb += ']'
+
         return {
             'text': inc_notification_template.substitute(fields),
-            'inlineKB': '[[{"text": "🔗 Инцидент в ITSM", "url": "' + fields['link'] + '", "style": "primary"}]]'
+            'inlineKB': inline_kb
         }
