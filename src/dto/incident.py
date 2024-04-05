@@ -8,7 +8,7 @@ from .notification import Notification
 logger = logging.getLogger(__name__)
 
 inc_notification_template = string.Template(
-    "*#$idx   #$status*\n\n"
+    "<b>#$idx   #$status</b> <i>by <a href=\"https://u.internal.myteam.mail.ru/profile/$editor\">$editor</a></i>\n\n"
     "⭐ $priority\n"
     "👤 $family_name $name $parent_name\n"
     "🏭 $org_unit\n"
@@ -44,6 +44,7 @@ class Incident(Notification):
     link: str = ""
     device: str = ""
     status: str = "OPEN"
+    editor: str = ""
 
     @classmethod
     def from_notification(cls, notification_text: str):
@@ -111,7 +112,7 @@ class Incident(Notification):
         # TODO Разбить регэксп на мелкие, отдельно для каждого поля.
         #  Возможно, реализовать что-то типа мапы поле: регэксп
         vkt_msg_pattern = re.compile(
-            r"#(?P<inc_id>INC\d+)   #(?P<status>\S+)\n\n"
+            r"#(?P<inc_id>INC\d+)   #(?P<status>\S+).+\n\n"
             r"⭐ (?P<priority>\S+)\n"
             r"👤 (?:(?P<family_name>\S+) (?P<name>\S+) (?P<parent_name>\S*)|(?P<job_title>.+))\n"
             r"🏭 (?P<org_unit>.+)\n"

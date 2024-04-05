@@ -31,6 +31,7 @@ def handle_notifications(bot, inc_handler, mon_handler):
     try:
         logger.info('Checking new emails...')
         for message in inc_handler.new_messages():
+            message.editor = bot.nickname
             vkt_message = message.prep_vkt_message()
             bot.send_message(
                 text=vkt_message['text'],
@@ -78,6 +79,7 @@ def handle_callbacks(bot):
                 break
 
         inc = Incident.from_vkt_message(message['text'], link)
+        inc.editor = event['payload']['from']['userId']
         if event['payload']['callbackData'] == 'close':
             inc.status = 'CLOSED'
         if event['payload']['callbackData'] == 'open':
