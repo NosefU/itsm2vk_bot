@@ -14,9 +14,9 @@ PRIORITY_EMOJI = {
 }
 
 vkt_template = string.Template(
-    "$priority_emoji *$server*\n"
-    "_$registration_date _\n\n"
-    "*`📖 $description`*\n"
+    "$priority_emoji <b>$server</b>\n"
+    "<i>$registration_date </i>\n\n"
+    "<b><code>📖 $description</code></b>\n"
 )
 
 

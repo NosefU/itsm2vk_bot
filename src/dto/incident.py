@@ -14,10 +14,10 @@ inc_notification_template = string.Template(
     "🏭 $org_unit\n"
     "📆 $creation_date\n\n"
     # "🔗 [Инцидент в ITSM]($link)\n\n"
-    "🪧 *Описание*\n"
-    "$subject\n\n"
-    "📖 *Подробно*\n"
-    "$description"
+    "🪧 <b>Описание</b>\n"
+    "<blockquote>$subject</blockquote>\n\n"
+    "📖 <b>Подробно</b>\n"
+    "<blockquote>$description</blockquote>"
 )
 
 inc_description_template = string.Template(
@@ -143,23 +143,26 @@ class Incident(Notification):
     def prep_vkt_message(self) -> dict:
         fields = asdict(self)
 
-        # экранируем "_", вычищаем пустые строки и превращаем всё в цитату
-        fields['subject'] = fields['subject'].replace('_', r'\_')
+        # вычищаем пустые строки
+        # fields['subject'] = fields['subject'].replace('_', r'\_')
         fields['subject'] = fields['subject'].replace('\r', '')
-        fields['subject'] = '\n'.join(['>' + s for s in fields['subject'].split('\n') if s])
+        fields['subject'] = '\n'.join([s for s in fields['subject'].split('\n') if s])
 
-        # экранируем "_", вычищаем пустые строки
-        fields['description'] = fields['description'].replace('_', r'\_')
+        # вычищаем пустые строки
+        # fields['description'] = fields['description'].replace('_', r'\_')
         fields['description'] = fields['description'].replace('\r', '')
         fields['description'] = '\n'.join([s for s in fields['description'].split('\n') if s])
 
         # если описание - пересылка другого инцидента, то парсим его,
-        # формируем часть сообщения, превращаем в цитату и склеиваем с основным сообщением.
+        # формируем часть сообщения и склеиваем с основным сообщением.
         if fields['description'].startswith('Для группы 2-ая линия ВК мессенджер (VK Teams)'):
             descr_inc = Incident.from_description(fields['description'])
             descr_fields = asdict(descr_inc)
             fields['description'] = inc_description_template.substitute(descr_fields)
-        fields['description'] = '\n'.join(['>' + s for s in fields['description'].split('\n')])
+        fields['description'] = '\n'.join([s for s in fields['description'].split('\n') if s])
+
+        fields['subject'] = fields['subject'].replace('<', '&lt;').replace('>', '&gt;').replace('&', '&amp;')
+        fields['description'] = fields['description'].replace('<', '&lt;').replace('>', '&gt;').replace('&', '&amp;')
 
         inline_kb = '[[{"text": "🔗 Инцидент в ITSM", "url": "' + fields['link'] + '", "style": "primary"}]'
         if self.status == 'OPEN':

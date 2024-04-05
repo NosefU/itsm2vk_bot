@@ -38,7 +38,7 @@ class Bot:
         params = {
             "token": self.token,
             "chatId": chat_id,
-            "parseMode": "MarkdownV2",
+            "parseMode": "HTML",
             "text": text
         }
         if inline_kb:
@@ -92,7 +92,7 @@ class Bot:
             "token": self.token,
             "msgId": msg_id,
             "chatId": chat_id,
-            "parseMode": "MarkdownV2",
+            "parseMode": "HTML",
             "text": text
         }
         if inline_kb:
