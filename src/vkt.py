@@ -68,7 +68,12 @@ class Bot:
         )
         logger.debug(f"Server answer: {resp.text}")
 
-        events = resp.json()['events']
+        try:
+            events = resp.json()['events']
+        except requests.exceptions.JSONDecodeError:
+            logger.error(f'Error decoding json "{resp.text}"')
+            raise
+
         if not events:
             return []
         self.last_event_id = events[-1]['eventId']
