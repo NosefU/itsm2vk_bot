@@ -1,10 +1,14 @@
 import os
 import logging
 import time
+from typing import TYPE_CHECKING
 
 from dotenv import load_dotenv
 from exchangelib import Credentials, Account, DELEGATE, Configuration
 from exchangelib.errors import ErrorFolderNotFound
+
+if TYPE_CHECKING:
+    import exchangelib
 
 from dto import Incident
 from mail_handler import MonitoringHandler, IncidentHandler
@@ -25,6 +29,13 @@ vkt_logger.setup(
     chats=[os.environ['VKT_ADMIN_ID'], ]
 )
 logger = logging.getLogger('bot')
+
+
+def walk_mail(mail_dir: 'exchangelib.folders.known_folders.Messages', path: str):
+    result_folder = mail_dir
+    for folder in path.split('/'):
+        result_folder = result_folder / folder
+    return result_folder
 
 
 def handle_notifications(bot, inc_handler, mon_handler):
@@ -109,8 +120,10 @@ if __name__ == '__main__':
         access_type=DELEGATE
     )
 
-    inc_handler = IncidentHandler(acct.inbox / 'prd.support')
-    mon_handler = MonitoringHandler(acct.inbox / 'Мониторинг')
+    incident_folder = walk_mail(acct.inbox, os.environ.get('EXC_INC_FOLDER', ''))
+    monitoring_folder = walk_mail(acct.inbox, os.environ.get('EXC_MON_FOLDER', ''))
+    inc_handler = IncidentHandler(incident_folder)
+    mon_handler = MonitoringHandler(monitoring_folder)
 
     bot = vkt.Bot(
         token=os.environ['VKT_BOT_TOKEN'],

@@ -31,11 +31,14 @@
     - `EXC_PASSWORD` - пароль от почтового ящика exchange;
     - `VKT_BOT_TOKEN` - токен бота VK Teams. Получать у @metabot.
 4. Переходим на вкладку `Variables`. Добавляем в `Repository variables` следующие переменные:
-    - `SERVER_IP` - адрес сервера, на котором будет развёртываться бот
-    - `SSH_USER` - пользователь на сервере
-    - `EXC_SERVER` - exchange сервер, что-то вроде `https://db24-ews.<your_host>/EWS/Exchange.asmx`
-    - `EXC_EMAIL` - email почтового ящика exchange
-    - `EXC_USER` - имя пользователя exchange, например `CORP\Username`
+    - `SERVER_IP` - адрес сервера, на котором будет развёртываться бот;
+    - `SSH_USER` - пользователь на сервере бота;
+    - `EXC_SERVER` - exchange сервер, что-то вроде `https://db24-ews.<your_host>/EWS/Exchange.asmx`;
+    - `EXC_EMAIL` - email почтового ящика exchange;
+    - `EXC_USER` - имя пользователя exchange, например `CORP\Username`;
+    - `EXC_INC_FOLDER` - папка со входящими письмами об инцидентах. `.` для указания корневой папки "Входящие". Можно указать вложенные папки, путь будет поределяться относительно папки "Входящие": `Notifications/Incidents`. 
+Опциональный, при отсутствии письма будут вычитываться из "Входящих";
+    - `EXC_MON_FOLDER` - папка со входящими письмами о событиях мониторинга. Правила такие же, как и для `EXC_INC_FOLDER`.
     - `VKT_BASE_URL` - обычно `https://api.internal.myteam.mail.ru/bot/v1/`
     - `VKT_ADMIN_ID` - id чата, в который будут сыпаться логи
     - `VKT_CHAT_ID` - id чата, в который будут сыпаться уведомления об инцидентах
