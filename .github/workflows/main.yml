@@ -1,10 +1,5 @@
 name: (Re)deploy bot on server
 
-permissions:
-  owner: write
-  contributors: write
-  actions: read
-
 on:
   push:
     branches:
