@@ -15,11 +15,6 @@ jobs:
       with:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-#    - name: Connect to server update bot
-#      run: |
-#        ssh -o StrictHostKeyChecking=no ${{ vars.SSH_USER }}@${{ vars.SERVER_IP }} 'cd ~/itsm2vk_bot/itsm2vk_bot && git pull && make build && make hard_restart'
-
-
     - name: Check if bot directory exists
       id: check-directory
       run: ssh -o StrictHostKeyChecking=no ${{ vars.SSH_USER }}@${{ vars.SERVER_IP }} '[ -d ~/itsm2vk_bot/itsm2vk_bot ]'
@@ -50,7 +45,7 @@ jobs:
           cd ~/itsm2vk_bot/itsm2vk_bot &&
           rm -f .env &&
           touch .env &&
-          for var in ${{ toJson(vars) }}; do
+          for var in ${{ toJson(vars) }} ${{ toJson(secrets) }}; do
             if [[ $var == BOT_* ]]; then
               # Удаляем префикс BOT_
               env_var_name=${var#BOT_}
