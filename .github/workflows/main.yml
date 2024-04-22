@@ -39,31 +39,26 @@ jobs:
           cd ~/itsm2vk_bot/itsm2vk_bot &&
           make build
         '
-        
+
     - name: Create .env file
       run: |
         touch .env
-        echo '${{ toJSON(vars) }}' | jq -r 'to_entries | map(select(.key | startswith("BOT_"))) | map("\(.key[4:] | ascii_upcase)=\(.value)") | .[]' > .env
-        echo '${{ toJSON(secrets) }}' | jq -r 'to_entries | map(select(.key | startswith("BOT_"))) | map("\(.key[4:] | ascii_upcase)=\(.value)") | .[]' >> .env
-        
+        echo '# generated with github workflow' > .env
+        echo '# exchange' >> .env
+        echo 'EXC_SERVER=${{ vars.EXC_SERVER }}' >> .env
+        echo 'EXC_EMAIL=${{ vars.EXC_EMAIL }}' >> .env
+        echo 'EXC_USER=${{ vars.EXC_USER }}' >> .env
+        echo 'EXC_PASSWORD=${{ secrets.EXC_PASSWORD }}' >> .env
 
-    - name: Display .env content
-      run: cat .env
+        echo '# vk teams cloud' >> .env
+        echo 'VKT_BASE_URL=${{ vars.VKT_BASE_URL }}' >> .env
+        echo 'VKT_BOT_TOKEN=${{ secrets.VKT_BOT_TOKEN }}' >> .env
+        echo 'VKT_CHAT_ID=${{ vars.VKT_CHAT_ID }}' >> .env
+        echo 'VKT_MONITORING_CHAT_ID=${{ vars.VKT_MONITORING_CHAT_ID }}' >> .env
+        echo 'VKT_ADMIN_ID=${{ vars.VKT_ADMIN_ID }}' >> .env
 
-#    - name: Generate .env file
-#      run: |
-#        ssh -o StrictHostKeyChecking=no ${{ vars.SSH_USER }}@${{ vars.SERVER_IP }} '
-#          echo "Generating .env file..." &&
-#          cd ~/itsm2vk_bot/itsm2vk_bot &&
-#          rm -f .env &&
-#          touch .env &&
-#          for var in "${!env[@]}" "${!secrets[@]}"; do
-#            if [[ $var == BOT_* ]]; then
-#              env_var_name=${var#BOT_}
-#              echo "$env_var_name=${!var}" >> .env
-#            fi
-#          done
-#        '
+    - name: Copy .env to server
+      run: scp -o StrictHostKeyChecking=no .env ${{ vars.SSH_USER }}@${{ vars.SERVER_IP }}:~/itsm2vk_bot/itsm2vk_bot/.env
 
     - name: Run bot
       run: |
