@@ -49,8 +49,18 @@ jobs:
         echo 'EXC_EMAIL=${{ vars.EXC_EMAIL }}' >> .env
         echo 'EXC_USER=${{ vars.EXC_USER }}' >> .env
         echo 'EXC_PASSWORD=${{ secrets.EXC_PASSWORD }}' >> .env
-        echo 'EXC_INC_FOLDER="${{ vars.EXC_INC_FOLDER }}"' >> .env
-        echo 'EXC_MON_FOLDER="${{ vars.EXC_MON_FOLDER }}"' >> .env
+        
+        if [[ "${{ vars.EXC_INC_FOLDER }}" =~ " " ]]; then
+          echo 'EXC_INC_FOLDER="${{ vars.EXC_INC_FOLDER }}"' >> .env
+        else
+          echo 'EXC_INC_FOLDER=${{ vars.EXC_INC_FOLDER }}' >> .env
+        fi
+        
+        if [[ "${{ vars.EXC_MON_FOLDER }}" =~ " " ]]; then
+          echo 'EXC_MON_FOLDER="${{ vars.EXC_MON_FOLDER }}"' >> .env
+        else
+          echo 'EXC_MON_FOLDER=${{ vars.EXC_MON_FOLDER }}' >> .env
+        fi
 
         echo '# vk teams cloud' >> .env
         echo 'VKT_BASE_URL=${{ vars.VKT_BASE_URL }}' >> .env
