@@ -42,8 +42,10 @@ jobs:
         
     - name: Create .env file
       run: |
-        echo "" > .env
-        echo '${{ toJSON(vars) }}' | jq -r 'to_entries | map(select(.key | startswith("BOT_"))) | map("\(.key[4:] | ascii_upcase)=\(.value)") | .[]'
+        touch .env
+        echo '${{ toJSON(vars) }}' | jq -r 'to_entries | map(select(.key | startswith("BOT_"))) | map("\(.key[4:] | ascii_upcase)=\(.value)") | .[]' > .env
+        echo '${{ toJSON(secrets) }}' | jq -r 'to_entries | map(select(.key | startswith("BOT_"))) | map("\(.key[4:] | ascii_upcase)=\(.value)") | .[]' >> .env
+        
 
     - name: Display .env content
       run: cat .env
