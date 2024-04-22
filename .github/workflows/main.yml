@@ -47,7 +47,7 @@ jobs:
         echo "" > .env
         # Loop through all secrets that start with "BOT"
         for VAR_NAME in $(env | grep -o '^BOT_[\S]*=' | sed 's/=$//'); do
-          echo $VAR_NAME
+          echo "$VAR_NAME"
           # Retrieve the value of the secret
 #          VAR_VALUE="${{ secrets[$VAR_NAME] }}"
           # Append the variable to the .env file
