@@ -47,11 +47,10 @@ jobs:
           cd ~/itsm2vk_bot/itsm2vk_bot &&
           rm -f .env &&
           touch .env &&
-          for var in ${{ toJson(vars) }} ${{ toJson(secrets) }}; do
+          for var in "${!env[@]}" "${!secrets[@]}"; do
             if [[ $var == BOT_* ]]; then
-              # Удаляем префикс BOT_
               env_var_name=${var#BOT_}
-              echo "$env_var_name=${{ vars[var] }}" >> .env
+              echo "$env_var_name=${!var}" >> .env
             fi
           done
         '
