@@ -40,7 +40,6 @@ jobs:
           make build
         '
         
-
     - name: Create .env file
       run: |
         # Start with an empty .env file
