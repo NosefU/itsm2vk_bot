@@ -31,8 +31,11 @@ vkt_logger.setup(
 logger = logging.getLogger('bot')
 
 
-def walk_mail(mail_dir: 'exchangelib.folders.known_folders.Messages', path: str):
+def walk_mail(mail_dir: 'exchangelib.folders.known_folders.Messages', path: str = ''):
     result_folder = mail_dir
+    if not path or path == '.':
+        return mail_dir
+
     for folder in path.split('/'):
         result_folder = result_folder / folder
     return result_folder
