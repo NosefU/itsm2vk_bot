@@ -39,7 +39,7 @@ class MailHandler(ABC):
         """
         pass
 
-    def new_messages(self) -> Generator[Notification]:
+    def new_messages(self) -> Generator[Notification, None, None]:
         """
         Генератор, который обрабатывает письма из папки, переданной в __init__.
         Если письмо соответствует фильтру из метода is_notification(),
