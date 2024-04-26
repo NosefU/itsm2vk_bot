@@ -30,9 +30,9 @@ class MailHandler(ABC):
 
         for item in unread_emails[::-1]:
             logger.info(f"Processing {self.type} message from " + item.sender.email_address + ": " + item.subject)
-            if self.is_notification(item):
+            if not self.is_notification(item):
                 logger.info(f'\t\tis not {self.type} notification')
-                item.is_read = True  # Помечаем письмо как прочитанное
+                # item.is_read = True  # Помечаем письмо как прочитанное
                 continue
 
             dto_obj = self.Dto.from_notification(item.text_body)
@@ -54,8 +54,8 @@ class MonitoringHandler(MailHandler):
     Dto = Monitoring
 
     def is_notification(self, item):
-        return item.sender.email_address != 'no-reply.monitoring@lukoil.com' \
-               or '.srv.lukoil.com' not in item.subject
+        return item.sender.email_address == 'no-reply.monitoring@lukoil.com' \
+               and '.srv.lukoil.com' in item.subject
 
 
 class IncidentHandler(MailHandler):
@@ -63,5 +63,5 @@ class IncidentHandler(MailHandler):
     Dto = Incident
 
     def is_notification(self, item):
-        return item.sender.email_address != 'prd.support@lukoil.com' \
-               or '] назначено на вашу группу [' not in item.subject
+        return item.sender.email_address == 'prd.support@lukoil.com' \
+               and '] назначено на вашу группу [' in item.subject
